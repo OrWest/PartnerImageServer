@@ -13,26 +13,36 @@ struct RegisteredUser: Content {
 }
 
 struct RegisterController: RouteCollection {
-    private static let tokenSize = 32
-
     func boot(routes: RoutesBuilder) throws {
         routes.post("register", use: register)
+
+        let tokenProtected = routes.grouped(UserToken.authenticator())
+        tokenProtected.get("me") { req -> RegisteredUser in
+            let user = try req.auth.require(Partner.self)
+            guard let userToken = try await UserToken.query(on: req.db)
+                .filter(\.$user.$id == user.id!)
+                .first() else {
+                throw Abort(.internalServerError)
+            }
+
+            return RegisteredUser(
+                userId: String(userToken.$user.id),
+                token: userToken.value
+            )
+        }
+
     }
 
     private func register(req: Request) async throws -> RegisteredUser {
-        let token = RegisterController.generateToken()
-        let newUser = Partner(token: token)
+        let newUser = Partner()
         try await newUser.save(on: req.db)
+        let token = try newUser.generateToken()
+        try await token.save(on: req.db)
 
         return RegisteredUser(
-            userId: String(try newUser.requireID()),
-            token: newUser.token
+            userId: String(token.$user.id),
+            token: token.value
         )
 
     }
-
-    private static func generateToken() -> String {
-        return [UInt8].random(count: tokenSize).base64
-    }
-
 }

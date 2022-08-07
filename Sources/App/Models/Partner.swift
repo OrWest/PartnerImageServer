@@ -8,17 +8,14 @@
 import Vapor
 import Fluent
 
-final class Partner: Model, Content {
+final class Partner: Model, Content, Authenticatable {
     static let schema: String = "partners"
 
     @ID(custom: "id", generatedBy: .database)
     var id: Int?
 
-    @Field(key: "token")
-    var token: String
-
-    @Parent(key: "partnership_id")
-    var partnership: Partnership
+    @OptionalParent(key: "partnership_id")
+    var partnership: Partnership?
 
     @Children(for: \.$creator)
     var createdImages: [Image]
@@ -34,8 +31,16 @@ final class Partner: Model, Content {
 
     init() { }
 
-    init(id: Int? = nil, token: String) {
+    init(id: Int? = nil) {
         self.id = id
-        self.token = token
+    }
+}
+
+extension Partner {
+    func generateToken() throws -> UserToken {
+        try .init(
+            value: [UInt8].random(count: 32).base64,
+            userID: self.requireID()
+        )
     }
 }
