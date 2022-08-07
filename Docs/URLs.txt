@@ -1,0 +1,43 @@
+base:
+somedomain.xyz/api/v1
+
+# Upload new image for partner
+POST /new
+With image as multipart/form-data
+
+# Get actual image
+GET /actual
+
+returns:
+{
+	"imageURL": <url>
+}
+
+# Get history (uploaded)
+GET /history/uploaded
+
+returns:
+[
+	{
+		"imageURL": <url>
+	}
+]
+
+# Get history (presented)
+GET /history/presented
+
+returns:
+[
+	{
+		"imageURL": <url>
+	}
+]
+
+# Register
+POST /register
+
+returns: 
+{
+	"userId": <int>,
+	"token": <string>
+}
