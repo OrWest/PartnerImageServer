@@ -7,4 +7,5 @@ func routes(_ app: Application) throws {
 
     try baseGroup.register(collection: RegisterController())
     try baseGroup.register(collection: ImageController())
+    try baseGroup.register(collection: PairController())
 }

@@ -17,20 +17,7 @@ struct RegisterController: RouteCollection {
         routes.post("register", use: register)
 
         let tokenProtected = routes.grouped(UserToken.authenticator())
-        tokenProtected.get("me") { req -> RegisteredUser in
-            let user = try req.auth.require(Partner.self)
-            guard let userToken = try await UserToken.query(on: req.db)
-                .filter(\.$user.$id == user.id!)
-                .first() else {
-                throw Abort(.internalServerError)
-            }
-
-            return RegisteredUser(
-                userId: String(userToken.$user.id),
-                token: userToken.value
-            )
-        }
-
+        tokenProtected.get("me", use: getMe)
     }
 
     private func register(req: Request) async throws -> RegisteredUser {
@@ -44,5 +31,19 @@ struct RegisterController: RouteCollection {
             token: token.value
         )
 
+    }
+
+    private func getMe(req: Request) async throws -> RegisteredUser {
+        let user = try req.auth.require(Partner.self)
+        guard let userToken = try await UserToken.query(on: req.db)
+            .filter(\.$user.$id == user.id!)
+            .first() else {
+            throw Abort(.internalServerError)
+        }
+
+        return RegisteredUser(
+            userId: String(userToken.$user.id),
+            token: userToken.value
+        )
     }
 }

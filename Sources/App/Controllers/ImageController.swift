@@ -11,7 +11,7 @@ class ImageController: RouteCollection {
     private let imageDirName = "tmp/"
 
     func boot(routes: RoutesBuilder) throws {
-        routes.post("new", use: uploadNewImage(req:))
+        routes.post("new", use: uploadNewImage)
     }
 
     private func uploadNewImage(req: Request) async throws -> Response {
