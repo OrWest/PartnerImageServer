@@ -5,7 +5,9 @@ import Vapor
 func routes(_ app: Application) throws {
     let baseGroup = app.grouped(["api", "v1"])
 
+    let tokenProtected = baseGroup.grouped(UserToken.authenticator())
+
     try baseGroup.register(collection: RegisterController())
-    try baseGroup.register(collection: ImageController())
-    try baseGroup.register(collection: PairController())
+    try tokenProtected.register(collection: ImageController())
+    try tokenProtected.register(collection: PairController())
 }

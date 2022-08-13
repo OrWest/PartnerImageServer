@@ -9,9 +9,8 @@ import Vapor
 
 class PairController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        let tokenProtected = routes.grouped(UserToken.authenticator())
-        tokenProtected.post("pair", ":userID", use: pair)
-        tokenProtected.get("partner", use: getPartner)
+        routes.post("pair", ":userID", use: pair)
+        routes.get("partner", use: getPartner)
     }
 
     private func pair(req: Request) async throws -> Response {
@@ -46,13 +45,9 @@ class PairController: RouteCollection {
             throw Abort(.notFound, reason: "No partnership related to this user (\(requestingUser.id!))")
         }
 
-        try await partnerShip.$partners.load(on: req.db)
-        req.logger.info("Partnership exists: \(partnerShip.id!). \(partnerShip.partners[0].id!)<>\(partnerShip.partners[1].id!)")
+        let partner = try await partnerShip.getPartner(me: requestingUser, db: req.db)
+        req.logger.info("Partnership exists: \(partnerShip.id!). \(requestingUser.id!)<>\(partner.id!)")
 
-        if partnerShip.partners[0].id == requestingUser.id {
-            return String(partnerShip.partners[1].id!)
-        } else {
-            return String(partnerShip.partners[0].id!)
-        }
+        return String(partner.id!)
     }
 }

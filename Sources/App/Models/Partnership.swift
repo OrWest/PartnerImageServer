@@ -24,5 +24,15 @@ final class Partnership: Model, Content {
     var deletedAt: Date?
 
     init() { }
+
+    func getPartner(me: Partner, db: Database) async throws -> Partner {
+        try await self.$partners.load(on: db)
+
+        if partners[0].id == me.id {
+            return partners[1]
+        } else {
+            return partners[0]
+        }
+    }
 }
 
