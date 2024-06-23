@@ -14,6 +14,9 @@ final class Partnership: Model, Content {
     @ID(key: .id)
     var id: UUID?
 
+    @Field(key: "pair_code")
+    var pairCode: String?
+
     @Children(for: \.$partnership)
     var partners: [Partner]
 

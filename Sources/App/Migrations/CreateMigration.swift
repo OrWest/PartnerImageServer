@@ -6,6 +6,7 @@ struct CreateMigration: AsyncMigration {
         // Partnerships
         try await database.schema("partnerships")
             .id()
+            .field("pair_code", .string)
             .field("created_at", .datetime)
             .field("deleted_at", .datetime)
             .create()
