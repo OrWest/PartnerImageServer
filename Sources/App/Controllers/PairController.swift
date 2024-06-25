@@ -31,6 +31,7 @@ class PairController: RouteCollection {
         }
 
         partnership.pairCode = nil // To not accept pair again
+        try await partnership.update(on: req.db)
         try await addPartnership(partnership, to: requestingUser, db: req.db)
         req.logger.info("Partnership finalized (\(partnership.id!)).")
 

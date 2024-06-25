@@ -7,7 +7,7 @@ func routes(_ app: Application) throws {
 
     let tokenProtected = baseGroup.grouped(UserToken.authenticator())
 
-    try baseGroup.register(collection: RegisterController())
+    try tokenProtected.register(collection: RegisterController())
     try tokenProtected.register(collection: ImageController())
     try tokenProtected.register(collection: PairController())
 }

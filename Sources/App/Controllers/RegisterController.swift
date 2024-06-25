@@ -15,12 +15,14 @@ struct RegisteredUser: Content {
 struct RegisterController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.post("register", use: register)
-
-        let tokenProtected = routes.grouped(UserToken.authenticator())
-        tokenProtected.get("me", use: getMe)
+        routes.get("me", use: getMe)
     }
 
     private func register(req: Request) async throws -> RegisteredUser {
+        if let registeredUser = try? await getRegisteredUser(req: req) {
+            return registeredUser
+        }
+
         let newUser = Partner()
         try await newUser.save(on: req.db)
         let token = try newUser.generateToken()
@@ -34,6 +36,10 @@ struct RegisterController: RouteCollection {
     }
 
     private func getMe(req: Request) async throws -> RegisteredUser {
+        try await getRegisteredUser(req: req)
+    }
+
+    private func getRegisteredUser(req: Request) async throws -> RegisteredUser {
         let user = try req.auth.require(Partner.self)
         guard let userToken = try await UserToken.query(on: req.db)
             .filter(\.$user.$id == user.id!)
